@@ -6,14 +6,16 @@ import math
 #pygame module initialization
 pygame.init()
 
-#global parameter
+#global parameters
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 MAX_POPULATION_SIZE = 35
 CLOCK = pygame.time.Clock()
 FPS = 60
-RULE_1_CONSTANT = 1
-RULE_2_CONSTANT = 2
+RULE_1_CONSTANT = 1 #constant to multiply velocity - velocity control
+RULE_2_CONSTANT = 2 #constant to multiply the seperation rate
+RULE_3_CONSTANT = 20 #constant to set minimum seperation distance of boids
+SCREEN_BORDER_MARGIN = 50 #constant to set the turning point before screen border
 
 #create game window
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -32,17 +34,14 @@ def average_mass(flock):
     if len(flock) > 1:
         x = x / n
         y = y / n
-    
-    #print("x =", x)
-    #print("y =", y)
 
     return (x, y)
 
+#function to avoid collisions
 def avoid_collisions(entity, flock):
-    # Define a minimum distance to maintain between boids
-    min_distance = 20
+    #Define a minimum distance to maintain between boids
 
-    # Calculate the vector to avoid collisions
+    #Calculate the vector to avoid collisions
     avoid_vector = [0, 0]
 
     for other_entity in flock:
@@ -51,14 +50,16 @@ def avoid_collisions(entity, flock):
             dy = other_entity.rect.centery - entity.rect.centery
             distance = (dx ** 2 + dy ** 2) ** 0.5
 
-            if distance < min_distance:
+            if distance < RULE_3_CONSTANT:
                 # Calculate the component of the avoid vector
                 # proportional to the distance to the other entity
                 avoid_vector[0] -= dx / distance
                 avoid_vector[1] -= dy / distance
 
-    return avoid_vector            
+    return avoid_vector
 
+
+#function to align boid to the average heading
 def average_heading(flock):
     avg_heading = [0, 0]
     total_entities = len(flock)
@@ -81,7 +82,7 @@ def average_heading(flock):
 
     return avg_heading
 
-#create class for Boids (flock)
+#class for Boids -inherited pygame sprite class
 class Boid(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -93,14 +94,14 @@ class Boid(pygame.sprite.Sprite):
 
     def update(self):
         # Check if the boid is near the screen borders
-        margin = 50
-        if self.rect.left < margin:
+
+        if self.rect.left < SCREEN_BORDER_MARGIN:
             self.velocity[0] += 1  # Steer away from the left border
-        elif self.rect.right > SCREEN_WIDTH - margin:
+        elif self.rect.right > SCREEN_WIDTH - SCREEN_BORDER_MARGIN:
             self.velocity[0] -= 1  # Steer away from the right border
-        if self.rect.top < margin:
+        if self.rect.top < SCREEN_BORDER_MARGIN:
             self.velocity[1] += 1  # Steer away from the top border
-        elif self.rect.bottom > SCREEN_HEIGHT - margin:
+        elif self.rect.bottom > SCREEN_HEIGHT - SCREEN_BORDER_MARGIN:
             self.velocity[1] -= 1  # Steer away from the bottom border
 
         # Update position
@@ -118,27 +119,26 @@ class Boid(pygame.sprite.Sprite):
             self.kill()
 
 
-
 #create sprite group for flock
 flock = pygame.sprite.Group()
 
-#game loop
+#check print
+print("simulation running")
+
+#Main Loop
 run = True
 while run:
 
     CLOCK.tick(FPS)
 
     #update background
-    screen.fill("blue")
+    screen.fill("black")
 
     #update sprite group
     flock.update()
 
     #draw sprite group
     flock.draw(screen)
-
-    #population size check
-    #print(len(flock))
 
     #boids spawner
     for x in range(MAX_POPULATION_SIZE):
@@ -147,7 +147,7 @@ while run:
             entity = Boid(random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
             flock.add(entity)
 
-    #quit program
+    #end simulation by click
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
@@ -167,46 +167,43 @@ while run:
         if vector_length != 0:
 
             normalized_vector = (d/vector_length, e/vector_length)
-            print(normalized_vector)
+
         else:
             normalized_vector = (0, 0)
 
         entity.rect.move_ip(int(RULE_1_CONSTANT*normalized_vector[0]),int(RULE_1_CONSTANT*normalized_vector[1]))
         
-        # RULE_2 implementation
+        #RULE_2 seperation 
         for entity in flock:
-            # Calculate the avoid vector
+            #Calculate the avoid vector
             avoid = avoid_collisions(entity, flock)
 
-            # Apply the avoid vector to the boid's movement
+            #Apply the avoid vector to the boid's movement
             entity.rect.move_ip(int(avoid[0] * RULE_2_CONSTANT), int(avoid[1] * RULE_2_CONSTANT))
 
-        # Inside the main loop
     for entity in flock:
-        # Calculate the avoid vector
+        #Calculate the avoid vector
         avoid = avoid_collisions(entity, flock)
 
-        # Calculate the alignment vector
+        #Calculate the alignment vector
         alignment = average_heading(flock)
 
-        # Apply the alignment vector to the boid's movement
+        #Apply the alignment vector to the boid's movement
         entity.velocity[0] += alignment[0]
         entity.velocity[1] += alignment[1]
 
-        # Limit the maximum speed of the boid (optional)
+        #Limit the maximum speed of the boid (optional)
         max_speed = 3
         speed = (entity.velocity[0] ** 2 + entity.velocity[1] ** 2) ** 0.5
         if speed > max_speed:
             entity.velocity[0] = max_speed * (entity.velocity[0] / speed)
             entity.velocity[1] = max_speed * (entity.velocity[1] / speed)
 
-        # Update the position of the boid
+        #Update the position of the boid
         entity.rect.move_ip(int(entity.velocity[0]), int(entity.velocity[1]))
 
-        # Ensure the boid stays within the screen boundaries
+        #Ensure the boid stays within the screen boundaries
         entity.rect.clamp_ip(screen.get_rect())
-
     #update display
     pygame.display.flip()
-
 pygame.quit()
