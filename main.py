@@ -7,9 +7,9 @@ import math
 pygame.init()
 
 #global parameters
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 600
-MAX_POPULATION_SIZE = 35
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 900
+MAX_POPULATION_SIZE = 40
 CLOCK = pygame.time.Clock()
 FPS = 60
 RULE_1_CONSTANT = 1 #constant to multiply velocity - velocity control
@@ -96,25 +96,25 @@ class Boid(pygame.sprite.Sprite):
         # Check if the boid is near the screen borders
 
         if self.rect.left < SCREEN_BORDER_MARGIN:
-            self.velocity[0] += 1  # Steer away from the left border
+            self.velocity[0] += 1  #Steer away from the left border
         elif self.rect.right > SCREEN_WIDTH - SCREEN_BORDER_MARGIN:
-            self.velocity[0] -= 1  # Steer away from the right border
+            self.velocity[0] -= 1  #Steer away from the right border
         if self.rect.top < SCREEN_BORDER_MARGIN:
-            self.velocity[1] += 1  # Steer away from the top border
+            self.velocity[1] += 1  #Steer away from the top border
         elif self.rect.bottom > SCREEN_HEIGHT - SCREEN_BORDER_MARGIN:
-            self.velocity[1] -= 1  # Steer away from the bottom border
+            self.velocity[1] -= 1  #Steer away from the bottom border
 
-        # Update position
+        #Update position
         self.rect.move_ip(self.velocity[0], self.velocity[1])
 
-        # Calculate the angle of rotation based on the velocity vector
+        #Calculate the angle of rotation based on the velocity vector
         angle = math.degrees(math.atan2(-self.velocity[1], self.velocity[0]))
 
-        # Rotate the original image and update the sprite
+        #Rotate the original image and update the sprite
         self.image = pygame.transform.rotate(self.original_image, angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 
-        # population control
+        #population control
         if not screen.get_rect().colliderect(self.rect):  # If boid is outside the screen
             self.kill()
 
@@ -132,7 +132,7 @@ while run:
     CLOCK.tick(FPS)
 
     #update background
-    screen.fill("black")
+    screen.fill("blue")
 
     #update sprite group
     flock.update()
@@ -206,4 +206,3 @@ while run:
         entity.rect.clamp_ip(screen.get_rect())
     #update display
     pygame.display.flip()
-pygame.quit()
