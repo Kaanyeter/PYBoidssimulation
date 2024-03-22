@@ -3,6 +3,9 @@ import random
 import math
 import time
 
+
+
+#kanker kanker kanker
 #pygame module initialization
 pygame.init()
 
