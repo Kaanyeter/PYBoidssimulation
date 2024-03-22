@@ -1,11 +1,7 @@
 import pygame
 import random
-import math
-import time
 
 
-
-#kanker kanker kanker
 #pygame module initialization
 pygame.init()
 
@@ -47,7 +43,7 @@ def average_mass(flock):
 class Boid(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("C:/Users/senor/OneDrive/python/Boidssimulation/Assets/arrow.png")
+        self.image = pygame.image.load("C:/Users/senor/OneDrive/python/PYBoidssimulation/arrow.png")
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
